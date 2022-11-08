@@ -22,13 +22,13 @@ plugins {
 	id 'com.palantir.docker' version '0.22.1'
 }
 
-group = 'siecola'
+group = 'dockeridjota'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '15'
 
 bootJar {
 	baseName = 'curso_aws_project01'
-	version =  '1.1.0'
+	version =  '1.2.0'
 	mainClassName = "br.com.siecola.aws_project01.AwsProject01Application"
 }
 
@@ -37,13 +37,13 @@ task unpack(type: Copy) {
 	from(zipTree(tasks.bootJar.outputs.files.singleFile))
 	into("build/dependency")
 }
+
 docker {
 	name "${project.group}/${bootJar.baseName}"
 	tags "${bootJar.version}"
 	copySpec.from(tasks.unpack.outputs).into("dependency")
 	buildArgs(['DEPENDENCY': "dependency"])
 }
-
 
 repositories {
 	mavenCentral()
