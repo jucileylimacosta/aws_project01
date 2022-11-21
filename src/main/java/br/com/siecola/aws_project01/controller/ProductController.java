@@ -1,7 +1,9 @@
 package br.com.siecola.aws_project01.controller;
 
+import br.com.siecola.aws_project01.enums.EventType;
 import br.com.siecola.aws_project01.model.Product;
 import br.com.siecola.aws_project01.repository.ProductRepository;
+import br.com.siecola.aws_project01.service.ProductPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +16,12 @@ import java.util.Optional;
 public class ProductController {
 
     private ProductRepository productRepository;
+    private ProductPublisher productPublisher;
 
     @Autowired
-    public ProductController(ProductRepository productRepository) {
+    public ProductController(ProductRepository productRepository, ProductPublisher productPublisher) {
         this.productRepository = productRepository;
+        this.productPublisher = productPublisher;
     }
 
     @GetMapping
@@ -29,7 +33,7 @@ public class ProductController {
     public ResponseEntity<Product> findById(@PathVariable long id) {
         Optional<Product> optProduct = productRepository.findById(id);
         if (optProduct.isPresent()) {
-            return new ResponseEntity<>(optProduct.get(), HttpStatus.OK);
+            return new ResponseEntity<Product>(optProduct.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -40,7 +44,9 @@ public class ProductController {
             @RequestBody Product product) {
         Product productCreated = productRepository.save(product);
 
-        return new ResponseEntity<>(productCreated,
+        productPublisher.publishProductEvent(productCreated, EventType.PRODUCT_CREATED, "matilde");
+
+        return new ResponseEntity<Product>(productCreated,
                 HttpStatus.CREATED);
     }
 
@@ -52,7 +58,9 @@ public class ProductController {
 
             Product productUpdated = productRepository.save(product);
 
-            return new ResponseEntity<>(productUpdated,
+            productPublisher.publishProductEvent(productUpdated, EventType.PRODUCT_UPDATE, "doralice");
+
+            return new ResponseEntity<Product>(productUpdated,
                     HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -67,7 +75,9 @@ public class ProductController {
 
             productRepository.delete(product);
 
-            return new ResponseEntity<>(product, HttpStatus.OK);
+            productPublisher.publishProductEvent(product, EventType.PRODUCT_DELETED, "hannah");
+
+            return new ResponseEntity<Product>(product, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -77,23 +87,9 @@ public class ProductController {
     public ResponseEntity<Product> findByCode(@RequestParam String code) {
         Optional<Product> optProduct = productRepository.findByCode(code);
         if (optProduct.isPresent()) {
-            return new ResponseEntity<>(optProduct.get(), HttpStatus.OK);
+            return new ResponseEntity<Product>(optProduct.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
